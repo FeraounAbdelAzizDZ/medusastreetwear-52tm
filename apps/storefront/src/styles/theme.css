@@ -11,10 +11,10 @@
   --color-void-gray: #1a1a1a;
   --color-void-mid: #2a2a2a;
   --color-void-light: #3a3a3a;
-  --color-void-muted: #666666;
-  --color-void-text: #999999;
-  --color-void-white: #f0f0f0;
-  --color-void-cream: #e8e4df;
+  --color-void-muted: #888888;
+  --color-void-text: #cccccc;
+  --color-void-white: #ffffff;
+  --color-void-cream: #f5f5f5;
   
   /* Accent - Electric */
   --color-accent: #ff3d00;

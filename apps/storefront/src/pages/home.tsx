@@ -53,11 +53,11 @@ const Home = () => {
             className="inline-block mb-8 px-4 py-2 border"
             style={{ 
               borderColor: "var(--color-void-mid)",
-              color: "var(--color-void-muted)"
+              color: "var(--color-void-white)"
             }}
           >
             <span 
-              className="text-xs tracking-[0.4em] uppercase"
+              className="text-sm font-bold tracking-[0.4em] uppercase"
               style={{ fontFamily: "var(--font-sans)" }}
             >
               Winter Collection 2025
@@ -79,10 +79,10 @@ const Home = () => {
 
           {/* Subtitle */}
           <p 
-            className="text-sm md:text-base max-w-md mx-auto mb-12 leading-relaxed"
+            className="text-base md:text-lg font-bold max-w-md mx-auto mb-12 leading-relaxed"
             style={{ 
               fontFamily: "var(--font-sans)",
-              color: "var(--color-void-text)"
+              color: "var(--color-void-white)"
             }}
           >
             Streetwear born from digital noise. Where concrete meets code.
@@ -110,7 +110,7 @@ const Home = () => {
             style={{ backgroundColor: "var(--color-void-dark)" }}
           >
             <span 
-              className="text-xs tracking-[0.3em] uppercase"
+              className="text-sm font-bold tracking-[0.3em] uppercase"
               style={{ 
                 fontFamily: "var(--font-sans)",
                 color: "var(--color-promo)"
@@ -119,7 +119,7 @@ const Home = () => {
               WINTER20
             </span>
             <span 
-              className="text-xs"
+              className="text-sm font-bold"
               style={{ 
                 fontFamily: "var(--font-sans)",
                 color: "var(--color-void-muted)"
@@ -128,10 +128,10 @@ const Home = () => {
               /
             </span>
             <span 
-              className="text-xs tracking-wider"
+              className="text-sm font-bold tracking-wider"
               style={{ 
                 fontFamily: "var(--font-sans)",
-                color: "var(--color-void-text)"
+                color: "var(--color-void-white)"
               }}
             >
               20% OFF SELECT ITEMS
@@ -163,7 +163,7 @@ const Home = () => {
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
             <div>
               <span 
-                className="text-xs tracking-[0.4em] uppercase mb-2 block"
+                className="text-sm font-bold tracking-[0.4em] uppercase mb-2 block"
                 style={{ 
                   fontFamily: "var(--font-sans)",
                   color: "var(--color-void-muted)"
@@ -172,7 +172,7 @@ const Home = () => {
                 New Arrivals
               </span>
               <h2 
-                className="text-4xl md:text-5xl tracking-wider"
+                className="text-4xl md:text-5xl tracking-wider font-bold"
                 style={{ 
                   fontFamily: "var(--font-display)",
                   color: "var(--color-void-white)"
@@ -183,13 +183,13 @@ const Home = () => {
             </div>
             <Link 
               to={storeHref as string}
-              className="text-sm uppercase tracking-[0.2em] transition-colors group flex items-center gap-2"
+              className="text-base font-bold uppercase tracking-[0.2em] transition-colors group flex items-center gap-2"
               style={{ 
                 fontFamily: "var(--font-sans)",
-                color: "var(--color-void-text)"
+                color: "var(--color-void-white)"
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-void-white)"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-void-text)"}
+              onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-promo)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-void-white)"}
             >
               View All
               <svg 
@@ -243,7 +243,7 @@ const Home = () => {
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
               <span 
-                className="text-xs tracking-[0.4em] uppercase mb-4 block"
+                className="text-sm font-bold tracking-[0.4em] uppercase mb-4 block"
                 style={{ 
                   fontFamily: "var(--font-sans)",
                   color: "var(--color-void-muted)"
@@ -252,7 +252,7 @@ const Home = () => {
                 The Brand
               </span>
               <h2 
-                className="text-4xl md:text-6xl tracking-wider mb-8"
+                className="text-4xl md:text-6xl tracking-wider font-bold mb-8"
                 style={{ 
                   fontFamily: "var(--font-display)",
                   color: "var(--color-void-white)"
@@ -263,10 +263,10 @@ const Home = () => {
                 <span style={{ color: "var(--color-accent)" }}>DIGITAL NOISE</span>
               </h2>
               <p 
-                className="text-sm leading-relaxed mb-6"
+                className="text-base font-bold leading-relaxed mb-6"
                 style={{ 
                   fontFamily: "var(--font-sans)",
-                  color: "var(--color-void-text)"
+                  color: "var(--color-void-white)"
                 }}
               >
                 VOID STATIC exists in the space between signal and noise. 
@@ -274,7 +274,7 @@ const Home = () => {
                 and digital worlds. Every piece is a statement against conformity.
               </p>
               <p 
-                className="text-sm leading-relaxed"
+                className="text-base font-bold leading-relaxed"
                 style={{ 
                   fontFamily: "var(--font-sans)",
                   color: "var(--color-void-text)"
@@ -321,7 +321,7 @@ const Home = () => {
       >
         <div className="content-container text-center">
           <h2 
-            className="text-5xl md:text-7xl tracking-wider mb-8"
+            className="text-5xl md:text-7xl tracking-wider font-bold mb-8"
             style={{ 
               fontFamily: "var(--font-display)",
               color: "var(--color-void-white)"
