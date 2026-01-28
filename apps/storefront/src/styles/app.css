@@ -1,12 +1,25 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 @config "../../tailwind.config.js";
 @import "./theme.css";
 
 @layer base {
   :root {
-    @apply bg-white text-zinc-900 antialiased;
+    @apply antialiased;
+    background-color: var(--color-void-black);
+    color: var(--color-void-white);
     text-rendering: optimizeLegibility;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-void-black);
   }
 }
 
@@ -14,6 +27,63 @@
   /* Content container */
   .content-container {
     @apply max-w-[1440px] w-full mx-auto px-6;
+  }
+
+  /* Promo badge */
+  .promo-badge {
+    background-color: var(--color-promo);
+    color: var(--color-void-black);
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Strikethrough price */
+  .price-original {
+    color: var(--color-void-muted);
+    text-decoration: line-through;
+  }
+
+  /* Discounted price */
+  .price-discounted {
+    color: var(--color-promo);
+    font-weight: 700;
+  }
+
+  /* Button styles */
+  .btn-primary {
+    background-color: var(--color-void-white);
+    color: var(--color-void-black);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    letter-spacing: 0.1em;
+    padding: 1rem 2rem;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-accent);
+    color: var(--color-void-white);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--color-void-white);
+    color: var(--color-void-white);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    letter-spacing: 0.1em;
+    padding: 1rem 2rem;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-void-white);
+    color: var(--color-void-black);
   }
 }
 
@@ -41,20 +111,25 @@
     @apply left-0;
   }
 
-  /* input:not([type="checkbox"]):-webkit-autofill,
-  input:not([type="checkbox"]):-webkit-autofill:hover,
-  input:not([type="checkbox"]):-webkit-autofill:focus,
-  textarea:-webkit-autofill,
-  textarea:-webkit-autofill:hover,
-  textarea:-webkit-autofill:focus,
-  select:-webkit-autofill,
-  select:-webkit-autofill:hover,
-  select:-webkit-autofill:focus {
-    border: 1px solid #212121;
-    -webkit-text-fill-color: #212121;
-    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
-    transition: background-color 5000s ease-in-out 0s;
-  } */
+  /* Glitch effect */
+  .glitch:hover {
+    animation: var(--animation-glitch);
+  }
+
+  /* Scanline overlay */
+  .scanlines::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.1) 0px,
+      rgba(0, 0, 0, 0.1) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+  }
 }
 
 /* Navigation menu dropdown animations */

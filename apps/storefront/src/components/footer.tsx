@@ -23,60 +23,119 @@ const Footer = () => {
 
   return (
     <footer
-      className="bg-zinc-50 border-t border-zinc-300 w-full"
+      className="w-full border-t"
+      style={{ 
+        backgroundColor: "var(--color-void-dark)", 
+        borderColor: "var(--color-void-mid)" 
+      }}
       data-testid="footer"
     >
       <div className="content-container flex flex-col w-full">
         <div className="flex flex-col gap-y-12 lg:flex-row items-start justify-between py-16">
-          <div className="lg:w-1/3 flex flex-col gap-y-4">
+          <div className="lg:w-1/3 flex flex-col gap-y-6">
             <Link
               to={baseHref || "/"}
-              className="text-xl font-bold text-zinc-900 hover:text-zinc-600 transition-colors w-fit"
+              className="flex flex-col items-start group w-fit"
             >
-              Bloom
+              <span 
+                className="text-2xl tracking-[0.3em] transition-all group-hover:tracking-[0.4em]"
+                style={{ 
+                  fontFamily: "var(--font-display)",
+                  color: "var(--color-void-white)"
+                }}
+              >
+                VOID
+              </span>
+              <span 
+                className="text-[0.5rem] tracking-[0.5em] -mt-1"
+                style={{ 
+                  fontFamily: "var(--font-sans)",
+                  color: "var(--color-void-muted)"
+                }}
+              >
+                STATIC
+              </span>
             </Link>
-            <p className="text-zinc-600 max-w-md text-base font-medium">
-              Build Medusa based ecommerce stores with AI.
+            <p 
+              className="max-w-md text-sm leading-relaxed"
+              style={{ 
+                color: "var(--color-void-text)",
+                fontFamily: "var(--font-sans)"
+              }}
+            >
+              Streetwear for the digital age. Born from concrete and code.
             </p>
             <CountrySelect regions={regions ?? []} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-16">
             {categories && categories.length > 0 ? (
               <FooterColumn
-                title="Categories"
-                links={categories.map((category) => ({
-                  name: category.name,
-                  url: `${baseHref}/categories/${category.handle}`,
-                  isExternal: false,
-                }))}
+                title="Shop"
+                links={[
+                  { name: "All Products", url: `${baseHref}/store`, isExternal: false },
+                  ...categories.map((category) => ({
+                    name: category.name,
+                    url: `${baseHref}/categories/${category.handle}`,
+                    isExternal: false,
+                  })),
+                ]}
               />
             ) : (
-              <div className="flex flex-col gap-y-4">
-                <h3 className="text-zinc-900 text-sm font-medium uppercase tracking-wide">
-                  Categories
-                </h3>
-                <p className="text-sm text-zinc-600">No categories</p>
-              </div>
+              <FooterColumn
+                title="Shop"
+                links={[
+                  { name: "All Products", url: `${baseHref}/store`, isExternal: false },
+                ]}
+              />
             )}
+            <FooterColumn
+              title="Info"
+              links={[
+                { name: "About", url: "#", isExternal: false },
+                { name: "Contact", url: "#", isExternal: false },
+                { name: "Shipping", url: "#", isExternal: false },
+              ]}
+            />
           </div>
         </div>
-        <div className="border-t border-zinc-300 py-6">
+        <div 
+          className="border-t py-6"
+          style={{ borderColor: "var(--color-void-mid)" }}
+        >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <span className="text-xs text-zinc-600">
-              © {new Date().getFullYear()} Bloom. All rights reserved.
+            <span 
+              className="text-xs tracking-wider"
+              style={{ 
+                color: "var(--color-void-muted)",
+                fontFamily: "var(--font-sans)"
+              }}
+            >
+              {new Date().getFullYear()} VOID STATIC. ALL RIGHTS RESERVED.
             </span>
             <div className="flex gap-6">
               <Link
-                className="text-xs text-zinc-600 hover:text-zinc-500 transition-colors"
+                className="text-xs tracking-wider transition-colors"
                 to={"/"}
+                style={{ 
+                  color: "var(--color-void-muted)",
+                  fontFamily: "var(--font-sans)"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-void-white)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-void-muted)"}
               >
-                Privacy Policy
+                PRIVACY
               </Link>
               <Link
-                className="text-xs text-zinc-600 hover:text-zinc-500 transition-colors"
+                className="text-xs tracking-wider transition-colors"
                 to={"/"}
+                style={{ 
+                  color: "var(--color-void-muted)",
+                  fontFamily: "var(--font-sans)"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-void-white)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-void-muted)"}
               >
-                Terms of Service
+                TERMS
               </Link>
             </div>
           </div>
@@ -99,25 +158,43 @@ const FooterColumn = ({
 }) => {
   return (
     <div className="flex flex-col gap-y-4">
-      <h3 className="text-zinc-900 text-sm font-medium uppercase tracking-wide">
+      <h3 
+        className="text-xs uppercase tracking-[0.3em]"
+        style={{ 
+          color: "var(--color-void-muted)",
+          fontFamily: "var(--font-sans)"
+        }}
+      >
         {title}
       </h3>
       <ul className="space-y-3">
         {links.map((link) => (
-          <li key={link.url} className="text-sm">
+          <li key={link.url}>
             {link.isExternal ? (
               <a
                 href={link.url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-zinc-600 hover:text-zinc-500 transition-colors"
+                className="text-sm uppercase tracking-wider transition-colors"
+                style={{ 
+                  color: "var(--color-void-text)",
+                  fontFamily: "var(--font-display)"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-void-white)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-void-text)"}
               >
                 {link.name}
               </a>
             ) : (
               <Link
                 to={link.url}
-                className="text-zinc-600 hover:text-zinc-500 transition-colors"
+                className="text-sm uppercase tracking-wider transition-colors"
+                style={{ 
+                  color: "var(--color-void-text)",
+                  fontFamily: "var(--font-display)"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-void-white)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-void-text)"}
               >
                 {link.name}
               </Link>
