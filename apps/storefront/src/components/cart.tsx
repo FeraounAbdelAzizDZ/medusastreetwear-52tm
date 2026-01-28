@@ -351,8 +351,8 @@ export const CartPromo = ({ cart }: CartPromoProps) => {
     <div className="flex flex-wrap gap-2">
       {cart.promotions.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {cart.promotions.map((promotion) => (
-            <Button key={promotion.code} variant="secondary" size="fit">
+          {cart.promotions.map((promotion, index) => (
+            <Button key={promotion.code || `promo-${index}`} variant="secondary" size="fit">
               {promotion.code}
               <XMark
                 onClick={() => handleRemove(promotion.code || "")}

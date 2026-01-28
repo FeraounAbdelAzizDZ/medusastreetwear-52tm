@@ -34,7 +34,7 @@ const ImageGallery = memo(function ImageGallery({ images }: ImageGalleryProps) {
               
               return (
                 <div
-                  key={image.id}
+                  key={image.id || `image-${index}`}
                   className="w-full h-full flex-shrink-0 relative"
                 >
                   {!!image.url && (

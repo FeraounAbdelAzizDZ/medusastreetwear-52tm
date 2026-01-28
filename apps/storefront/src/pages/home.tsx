@@ -11,7 +11,7 @@ const Home = () => {
   const storeHref = countryCode ? `/${countryCode}/store` : "/store"
 
   // Get region from loader
-  const { region } = useLoaderData({ from: "/$countryCode" }) as any
+  const { region } = useLoaderData({ from: "/$countryCode/" }) as any
 
   // Fetch latest products and promotions
   const { data: latestProductsData } = useLatestProducts({ 

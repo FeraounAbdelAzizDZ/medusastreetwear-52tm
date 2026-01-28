@@ -91,9 +91,9 @@ const Footer = () => {
             <FooterColumn
               title="Info"
               links={[
-                { name: "About", url: "#", isExternal: false },
-                { name: "Contact", url: "#", isExternal: false },
-                { name: "Shipping", url: "#", isExternal: false },
+                { name: "About", url: "#about", isExternal: false },
+                { name: "Contact", url: "#contact", isExternal: false },
+                { name: "Shipping", url: "#shipping", isExternal: false },
               ]}
             />
           </div>
@@ -110,7 +110,7 @@ const Footer = () => {
                 fontFamily: "var(--font-sans)"
               }}
             >
-              {new Date().getFullYear()} VOID STATIC. ALL RIGHTS RESERVED.
+              2025 VOID STATIC. ALL RIGHTS RESERVED.
             </span>
             <div className="flex gap-6">
               <Link
