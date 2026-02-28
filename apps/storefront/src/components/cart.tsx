@@ -17,12 +17,6 @@ import {
   useApplyPromoCode,
   useRemovePromoCode,
 } from "@/lib/hooks/use-cart"
-import { usePromotions } from "@/lib/hooks/use-promotions"
-import { 
-  getPromotionsForProduct, 
-  getBestPromotion,
-  calculateDiscountedPrice 
-} from "@/lib/data/promotions"
 import { sortCartItems } from "@/lib/utils/cart"
 import { getCountryCodeFromPath } from "@/lib/utils/region"
 import { formatPrice } from "@/lib/utils/price"
@@ -64,7 +58,6 @@ type CartItemQuantitySelectorProps = {
 
 export const CartItemQuantitySelector = ({
   item,
-  type = "default",
   fields,
 }: CartItemQuantitySelectorProps) => {
   const updateLineItemMutation = useUpdateLineItem({ fields })
@@ -82,7 +75,7 @@ export const CartItemQuantitySelector = ({
   }
 
   return (
-    <div 
+    <div
       className="flex items-center border"
       style={{ borderColor: "var(--color-void-mid)" }}
     >
@@ -97,7 +90,7 @@ export const CartItemQuantitySelector = ({
       </Button>
       <span
         className="text-sm font-bold text-center px-3"
-        style={{ 
+        style={{
           color: "var(--color-void-white)",
           fontFamily: "var(--font-sans)"
         }}
@@ -118,7 +111,7 @@ export const CartItemQuantitySelector = ({
 }
 
 
-interface CartLineItemWithPromoProps {
+interface CartLineItemProps {
   item: HttpTypes.StoreCartLineItem
   cart: HttpTypes.StoreCart
   type?: "default" | "compact" | "display"
@@ -126,60 +119,49 @@ interface CartLineItemWithPromoProps {
   className?: string
 }
 
-export const CartLineItemWithPromo = ({
+/**
+ * Cart line item that uses Medusa's real discount data.
+ * Since promotions are auto-applied to the cart, item.total
+ * already reflects the discounted price and item.original_total
+ * is the pre-discount price.
+ */
+export const CartLineItem = ({
   item,
   cart,
   type = "default",
   fields,
   className,
-}: CartLineItemWithPromoProps) => {
-  const { data: promotionsData } = usePromotions()
-  
-  // Get product ID from the line item
-  const productId = item.product_id
-  
-  // Get the original unit price
-  const unitPrice = item.unit_price || 0
+}: CartLineItemProps) => {
   const currencyCode = cart.currency_code
-  
-  // Check for promotions
-  const productPromos = productId ? getPromotionsForProduct(promotionsData?.promotions || {}, productId) : []
-  const bestPromo = getBestPromotion(productPromos, unitPrice, currencyCode)
-  
-  // Calculate discounted price
-  const discountedUnitPrice = bestPromo 
-    ? calculateDiscountedPrice(unitPrice, bestPromo, currencyCode)
-    : null
-  
-  const hasPromo = discountedUnitPrice !== null && discountedUnitPrice < unitPrice
-  
-  // Calculate totals
-  const originalTotal = unitPrice * item.quantity
-  const discountedTotal = hasPromo ? discountedUnitPrice * item.quantity : originalTotal
+  const currentTotal = item.total || 0
+  const originalTotal = item.original_total || currentTotal
+  const hasDiscount = currentTotal < originalTotal
+
+  // Find the applied promo code from the cart's promotions
+  const appliedPromo = cart.promotions?.[0]
 
   if (type === "compact") {
     return (
-      <div 
-        className={clsx("flex items-start gap-x-4 py-4 border-b", className)} 
+      <div
+        className={clsx("flex items-start gap-x-4 py-4 border-b", className)}
         style={{ borderColor: "var(--color-void-mid)" }}
-        data-testid="cart-item"
       >
-        <div 
+        <div
           className="flex-shrink-0 w-20 h-20 overflow-hidden"
           style={{ backgroundColor: "var(--color-void-gray)" }}
         >
-          <Thumbnail 
-            thumbnail={item.thumbnail} 
-            alt={item.product_title || item.title} 
+          <Thumbnail
+            thumbnail={item.thumbnail}
+            alt={item.product_title || item.title}
             className="w-full h-full object-cover"
           />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h4 
+              <h4
                 className="text-base font-bold line-clamp-1"
-                style={{ 
+                style={{
                   color: "var(--color-void-white)",
                   fontFamily: "var(--font-display)"
                 }}
@@ -187,9 +169,9 @@ export const CartLineItemWithPromo = ({
                 {item.product_title}
               </h4>
               {item.variant_title && item.variant_title !== "Default Variant" && (
-                <p 
+                <p
                   className="text-sm mt-1"
-                  style={{ 
+                  style={{
                     color: "var(--color-void-muted)",
                     fontFamily: "var(--font-sans)"
                   }}
@@ -197,19 +179,17 @@ export const CartLineItemWithPromo = ({
                   {item.variant_title}
                 </p>
               )}
-              
-              {/* Promo Badge */}
-              {hasPromo && bestPromo && (
+              {hasDiscount && appliedPromo && (
                 <div className="flex items-center gap-2 mt-2">
-                  <span 
+                  <span
                     className="text-xs font-bold px-2 py-0.5"
-                    style={{ 
+                    style={{
                       backgroundColor: "var(--color-promo)",
                       color: "var(--color-void-black)",
                       fontFamily: "var(--font-sans)"
                     }}
                   >
-                    {bestPromo.code} -{bestPromo.value}%
+                    {appliedPromo.code}
                   </span>
                 </div>
               )}
@@ -218,39 +198,38 @@ export const CartLineItemWithPromo = ({
           </div>
 
           <div className="flex items-center justify-between mt-3">
-            <CartItemQuantitySelector item={item} type="compact" fields={fields} />
-            
+            <CartItemQuantitySelector item={item} fields={fields} />
             <div className="text-right">
-              {hasPromo ? (
+              {hasDiscount ? (
                 <div className="flex flex-col items-end">
-                  <span 
+                  <span
                     className="text-sm font-bold line-through"
-                    style={{ 
+                    style={{
                       color: "var(--color-void-muted)",
                       fontFamily: "var(--font-sans)"
                     }}
                   >
                     {formatPrice({ amount: originalTotal, currency_code: currencyCode })}
                   </span>
-                  <span 
+                  <span
                     className="text-base font-bold"
-                    style={{ 
+                    style={{
                       color: "var(--color-promo)",
                       fontFamily: "var(--font-sans)"
                     }}
                   >
-                    {formatPrice({ amount: discountedTotal, currency_code: currencyCode })}
+                    {formatPrice({ amount: currentTotal, currency_code: currencyCode })}
                   </span>
                 </div>
               ) : (
-                <span 
+                <span
                   className="text-base font-bold"
-                  style={{ 
+                  style={{
                     color: "var(--color-void-white)",
                     fontFamily: "var(--font-sans)"
                   }}
                 >
-                  {formatPrice({ amount: originalTotal, currency_code: currencyCode })}
+                  {formatPrice({ amount: currentTotal, currency_code: currencyCode })}
                 </span>
               )}
             </div>
@@ -263,13 +242,10 @@ export const CartLineItemWithPromo = ({
   if (type === "display") {
     return (
       <div
-        className={clsx(
-          "flex items-center gap-4 py-4 border-b",
-          className
-        )}
+        className={clsx("flex items-center gap-4 py-4 border-b", className)}
         style={{ borderColor: "var(--color-void-mid)" }}
       >
-        <div 
+        <div
           className="flex-shrink-0 w-16 h-16 overflow-hidden"
           style={{ backgroundColor: "var(--color-void-gray)" }}
         >
@@ -280,9 +256,9 @@ export const CartLineItemWithPromo = ({
           />
         </div>
         <div className="flex-1">
-          <p 
+          <p
             className="text-base font-bold"
-            style={{ 
+            style={{
               color: "var(--color-void-white)",
               fontFamily: "var(--font-display)"
             }}
@@ -290,9 +266,9 @@ export const CartLineItemWithPromo = ({
             {item.product_title}
           </p>
           {item.variant_title && item.variant_title !== "Default Variant" && (
-            <p 
+            <p
               className="text-sm"
-              style={{ 
+              style={{
                 color: "var(--color-void-muted)",
                 fontFamily: "var(--font-sans)"
               }}
@@ -300,59 +276,59 @@ export const CartLineItemWithPromo = ({
               {item.variant_title}
             </p>
           )}
-          <p 
+          <p
             className="text-sm"
-            style={{ 
+            style={{
               color: "var(--color-void-muted)",
               fontFamily: "var(--font-sans)"
             }}
           >
             Qty: {item.quantity}
           </p>
-          {hasPromo && bestPromo && (
-            <span 
+          {hasDiscount && appliedPromo && (
+            <span
               className="inline-block text-xs font-bold px-2 py-0.5 mt-1"
-              style={{ 
+              style={{
                 backgroundColor: "var(--color-promo)",
                 color: "var(--color-void-black)",
                 fontFamily: "var(--font-sans)"
               }}
             >
-              {bestPromo.code} -{bestPromo.value}%
+              {appliedPromo.code}
             </span>
           )}
         </div>
         <div className="text-right">
-          {hasPromo ? (
+          {hasDiscount ? (
             <div className="flex flex-col items-end">
-              <span 
+              <span
                 className="text-sm font-bold line-through"
-                style={{ 
+                style={{
                   color: "var(--color-void-muted)",
                   fontFamily: "var(--font-sans)"
                 }}
               >
                 {formatPrice({ amount: originalTotal, currency_code: currencyCode })}
               </span>
-              <span 
+              <span
                 className="text-base font-bold"
-                style={{ 
+                style={{
                   color: "var(--color-promo)",
                   fontFamily: "var(--font-sans)"
                 }}
               >
-                {formatPrice({ amount: discountedTotal, currency_code: currencyCode })}
+                {formatPrice({ amount: currentTotal, currency_code: currencyCode })}
               </span>
             </div>
           ) : (
-            <span 
+            <span
               className="text-base font-bold"
-              style={{ 
+              style={{
                 color: "var(--color-void-white)",
                 fontFamily: "var(--font-sans)"
               }}
             >
-              {formatPrice({ amount: originalTotal, currency_code: currencyCode })}
+              {formatPrice({ amount: currentTotal, currency_code: currencyCode })}
             </span>
           )}
         </div>
@@ -360,27 +336,27 @@ export const CartLineItemWithPromo = ({
     )
   }
 
-  // Default type
+  // Default type - full cart page
   return (
-    <div 
+    <div
       className="flex items-center gap-6 py-4 border-b"
       style={{ borderColor: "var(--color-void-mid)" }}
     >
-      <div 
+      <div
         className="flex-shrink-0 w-24 h-24 overflow-hidden"
         style={{ backgroundColor: "var(--color-void-gray)" }}
       >
-        <Thumbnail 
-          thumbnail={item.thumbnail} 
+        <Thumbnail
+          thumbnail={item.thumbnail}
           alt={item.product_title || item.title}
-          className="w-full h-full object-cover" 
+          className="w-full h-full object-cover"
         />
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col gap-y-1">
-        <span 
+        <span
           className="text-lg font-bold"
-          style={{ 
+          style={{
             color: "var(--color-void-white)",
             fontFamily: "var(--font-display)"
           }}
@@ -388,9 +364,9 @@ export const CartLineItemWithPromo = ({
           {item.product_title}
         </span>
         {item.variant_title && item.variant_title !== "Default Variant" && (
-          <span 
+          <span
             className="text-sm"
-            style={{ 
+            style={{
               color: "var(--color-void-muted)",
               fontFamily: "var(--font-sans)"
             }}
@@ -398,16 +374,16 @@ export const CartLineItemWithPromo = ({
             {item.variant_title}
           </span>
         )}
-        {hasPromo && bestPromo && (
-          <span 
+        {hasDiscount && appliedPromo && (
+          <span
             className="inline-block text-xs font-bold px-2 py-0.5 mt-1 w-fit"
-            style={{ 
+            style={{
               backgroundColor: "var(--color-promo)",
               color: "var(--color-void-black)",
               fontFamily: "var(--font-sans)"
             }}
           >
-            {bestPromo.code} -{bestPromo.value}%
+            {appliedPromo.code}
           </span>
         )}
       </div>
@@ -416,36 +392,36 @@ export const CartLineItemWithPromo = ({
         <CartItemQuantitySelector item={item} fields={fields} />
 
         <div className="text-right min-w-[100px]">
-          {hasPromo ? (
+          {hasDiscount ? (
             <div className="flex flex-col items-end">
-              <span 
+              <span
                 className="text-sm font-bold line-through"
-                style={{ 
+                style={{
                   color: "var(--color-void-muted)",
                   fontFamily: "var(--font-sans)"
                 }}
               >
                 {formatPrice({ amount: originalTotal, currency_code: currencyCode })}
               </span>
-              <span 
+              <span
                 className="text-lg font-bold"
-                style={{ 
+                style={{
                   color: "var(--color-promo)",
                   fontFamily: "var(--font-sans)"
                 }}
               >
-                {formatPrice({ amount: discountedTotal, currency_code: currencyCode })}
+                {formatPrice({ amount: currentTotal, currency_code: currencyCode })}
               </span>
             </div>
           ) : (
-            <span 
+            <span
               className="text-lg font-bold"
-              style={{ 
+              style={{
                 color: "var(--color-void-white)",
                 fontFamily: "var(--font-sans)"
               }}
             >
-              {formatPrice({ amount: originalTotal, currency_code: currencyCode })}
+              {formatPrice({ amount: currentTotal, currency_code: currencyCode })}
             </span>
           )}
         </div>
@@ -454,19 +430,6 @@ export const CartLineItemWithPromo = ({
       </div>
     </div>
   )
-}
-
-// Keep original CartLineItem for backward compatibility
-interface CartLineItemProps {
-  item: HttpTypes.StoreCartLineItem
-  cart: HttpTypes.StoreCart
-  type?: "default" | "compact" | "display"
-  fields?: string
-  className?: string
-}
-
-export const CartLineItem = (props: CartLineItemProps) => {
-  return <CartLineItemWithPromo {...props} />
 }
 
 
@@ -482,61 +445,40 @@ export const CartSummary = ({ cart }: CartSummaryProps) => {
     <div className="space-y-4">
       <div className="space-y-3">
         <div className="flex justify-between text-base">
-          <span 
+          <span
             className="font-bold"
-            style={{ 
+            style={{
               color: "var(--color-void-muted)",
               fontFamily: "var(--font-sans)"
             }}
           >
             Subtotal
           </span>
-          <span 
+          <span
             className="font-bold"
-            style={{ 
+            style={{
               color: "var(--color-void-white)",
               fontFamily: "var(--font-sans)"
             }}
           >
-            {formatPrice({ amount: cart.subtotal || 0, currency_code: cart.currency_code })}
-          </span>
-        </div>
-
-        <div className="flex justify-between text-base">
-          <span 
-            className="font-bold"
-            style={{ 
-              color: "var(--color-void-muted)",
-              fontFamily: "var(--font-sans)"
-            }}
-          >
-            Shipping
-          </span>
-          <span 
-            className="font-bold"
-            style={{ 
-              color: "var(--color-void-white)",
-              fontFamily: "var(--font-sans)"
-            }}
-          >
-            {formatPrice({ amount: cart.shipping_total || 0, currency_code: cart.currency_code })}
+            {formatPrice({ amount: cart.original_item_total || cart.subtotal || 0, currency_code: cart.currency_code })}
           </span>
         </div>
 
         {(cart.discount_total || 0) > 0 && (
           <div className="flex justify-between text-base">
-            <span 
+            <span
               className="font-bold"
-              style={{ 
+              style={{
                 color: "var(--color-void-muted)",
                 fontFamily: "var(--font-sans)"
               }}
             >
               Discount
             </span>
-            <span 
+            <span
               className="font-bold"
-              style={{ 
+              style={{
                 color: "var(--color-promo)",
                 fontFamily: "var(--font-sans)"
               }}
@@ -547,18 +489,39 @@ export const CartSummary = ({ cart }: CartSummaryProps) => {
         )}
 
         <div className="flex justify-between text-base">
-          <span 
+          <span
             className="font-bold"
-            style={{ 
+            style={{
+              color: "var(--color-void-muted)",
+              fontFamily: "var(--font-sans)"
+            }}
+          >
+            Shipping
+          </span>
+          <span
+            className="font-bold"
+            style={{
+              color: "var(--color-void-white)",
+              fontFamily: "var(--font-sans)"
+            }}
+          >
+            {formatPrice({ amount: cart.shipping_total || 0, currency_code: cart.currency_code })}
+          </span>
+        </div>
+
+        <div className="flex justify-between text-base">
+          <span
+            className="font-bold"
+            style={{
               color: "var(--color-void-muted)",
               fontFamily: "var(--font-sans)"
             }}
           >
             Tax
           </span>
-          <span 
+          <span
             className="font-bold"
-            style={{ 
+            style={{
               color: "var(--color-void-white)",
               fontFamily: "var(--font-sans)"
             }}
@@ -571,18 +534,18 @@ export const CartSummary = ({ cart }: CartSummaryProps) => {
       <hr style={{ borderColor: "var(--color-void-mid)" }} />
 
       <div className="flex justify-between text-lg">
-        <span 
+        <span
           className="font-bold"
-          style={{ 
+          style={{
             color: "var(--color-void-white)",
             fontFamily: "var(--font-display)"
           }}
         >
           TOTAL
         </span>
-        <span 
+        <span
           className="font-bold"
-          style={{ 
+          style={{
             color: "var(--color-void-white)",
             fontFamily: "var(--font-sans)"
           }}
@@ -639,40 +602,41 @@ export const CartPromo = ({ cart }: CartPromoProps) => {
       {cart.promotions && cart.promotions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {cart.promotions.map((promotion, index) => (
-            <Button 
-              key={promotion.code || `promo-${index}`} 
-              variant="secondary" 
-              size="fit"
+            <button
+              key={promotion.code || `promo-${index}`}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-bold"
               style={{
                 backgroundColor: "var(--color-void-mid)",
                 color: "var(--color-promo)",
-                borderColor: "var(--color-promo)"
+                border: "1px solid var(--color-promo)",
+                fontFamily: "var(--font-sans)"
               }}
             >
               {promotion.code}
               <XMark
                 onClick={() => handleRemove(promotion.code || "")}
-                className="ml-2 cursor-pointer hover:opacity-70"
+                className="w-4 h-4 cursor-pointer hover:opacity-70"
               />
-            </Button>
+            </button>
           ))}
         </div>
       )}
 
       {!showInput && (
-        <Button
+        <button
           onClick={() => setShowInput(true)}
-          variant="transparent"
-          className="underline hover:opacity-70 p-0"
-          style={{ color: "var(--color-void-muted)" }}
-          size="fit"
+          className="underline hover:opacity-70 text-sm font-bold"
+          style={{
+            color: "var(--color-void-muted)",
+            fontFamily: "var(--font-sans)"
+          }}
         >
           Add promo code
-        </Button>
+        </button>
       )}
 
       {showInput && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full">
           <Input
             placeholder="Enter promo code"
             name="promoCode"
@@ -684,28 +648,28 @@ export const CartPromo = ({ cart }: CartPromoProps) => {
               color: "var(--color-void-white)"
             }}
           />
-          <Button 
-            onClick={handleApply} 
-            variant="primary" 
-            size="fit"
+          <button
+            onClick={handleApply}
+            className="px-4 py-2 text-sm font-bold"
             style={{
               backgroundColor: "var(--color-void-white)",
-              color: "var(--color-void-black)"
+              color: "var(--color-void-black)",
+              fontFamily: "var(--font-sans)"
             }}
           >
             Apply
-          </Button>
-          <Button 
-            onClick={() => setShowInput(false)} 
-            variant="secondary" 
-            size="fit"
+          </button>
+          <button
+            onClick={() => setShowInput(false)}
+            className="px-4 py-2 text-sm font-bold"
             style={{
               backgroundColor: "var(--color-void-mid)",
-              color: "var(--color-void-white)"
+              color: "var(--color-void-white)",
+              fontFamily: "var(--font-sans)"
             }}
           >
             Cancel
-          </Button>
+          </button>
         </div>
       )}
     </div>
@@ -718,22 +682,22 @@ export const CartEmpty = () => {
   const countryCode = getCountryCodeFromPath(location.pathname)
 
   return (
-    <div 
+    <div
       className="text-center py-16 flex flex-col items-center justify-center gap-4"
       style={{ backgroundColor: "var(--color-void-black)" }}
     >
-      <h2 
+      <h2
         className="text-2xl font-bold"
-        style={{ 
+        style={{
           color: "var(--color-void-white)",
           fontFamily: "var(--font-display)"
         }}
       >
         YOUR CART IS EMPTY
       </h2>
-      <p 
+      <p
         className="text-base font-bold"
-        style={{ 
+        style={{
           color: "var(--color-void-muted)",
           fontFamily: "var(--font-sans)"
         }}
@@ -741,23 +705,23 @@ export const CartEmpty = () => {
         Start by adding some products
       </p>
       <Link to={`/${countryCode}/store` as any}>
-        <Button 
-          variant="primary" 
-          size="fit"
+        <button
+          className="px-6 py-3 text-base font-bold uppercase tracking-wider"
           style={{
             backgroundColor: "var(--color-void-white)",
-            color: "var(--color-void-black)"
+            color: "var(--color-void-black)",
+            fontFamily: "var(--font-sans)"
           }}
         >
           Continue shopping
-        </Button>
+        </button>
       </Link>
     </div>
   )
 }
 
 
-export const DEFAULT_CART_DROPDOWN_FIELDS = "id, *items, total, currency_code, item_subtotal"
+export const DEFAULT_CART_DROPDOWN_FIELDS = "id, *items, total, currency_code, item_subtotal, *promotions"
 
 export const CartDropdown = () => {
   const { isOpen, openCart, closeCart } = useCartDrawer()
@@ -774,9 +738,9 @@ export const CartDropdown = () => {
   return (
     <Drawer open={isOpen} onOpenChange={(open) => (open ? openCart() : closeCart())}>
       <DrawerTrigger asChild>
-        <button 
+        <button
           className="font-bold hover:opacity-70 transition-opacity h-full"
-          style={{ 
+          style={{
             color: "var(--color-void-white)",
             fontFamily: "var(--font-sans)"
           }}
@@ -785,17 +749,17 @@ export const CartDropdown = () => {
         </button>
       </DrawerTrigger>
 
-      <DrawerContent 
+      <DrawerContent
         className="flex flex-col"
-        style={{ 
+        style={{
           backgroundColor: "var(--color-void-dark)",
           borderColor: "var(--color-void-mid)"
         }}
       >
         <DrawerHeader>
-          <DrawerTitle 
+          <DrawerTitle
             className="text-xl font-bold"
-            style={{ 
+            style={{
               color: "var(--color-void-white)",
               fontFamily: "var(--font-display)"
             }}
@@ -804,12 +768,11 @@ export const CartDropdown = () => {
           </DrawerTitle>
         </DrawerHeader>
 
-        {/* Empty Cart */}
         {(!cart || itemCount === 0) && (
           <div className="flex flex-col items-center justify-center flex-1 p-6">
-            <span 
+            <span
               className="text-base font-bold mb-4"
-              style={{ 
+              style={{
                 color: "var(--color-void-muted)",
                 fontFamily: "var(--font-sans)"
               }}
@@ -817,26 +780,25 @@ export const CartDropdown = () => {
               Your cart is empty
             </span>
             <Link to={`${baseHref}/store` as any} onClick={closeCart}>
-              <Button 
-                variant="secondary" 
-                size="fit"
+              <button
+                className="px-4 py-2 text-sm font-bold"
                 style={{
                   backgroundColor: "var(--color-void-mid)",
-                  color: "var(--color-void-white)"
+                  color: "var(--color-void-white)",
+                  fontFamily: "var(--font-sans)"
                 }}
               >
                 Explore products
-              </Button>
+              </button>
             </Link>
           </div>
         )}
 
-        {/* Cart Items */}
         {cart && itemCount > 0 && (
           <>
             <div className="flex-1 overflow-y-auto px-6">
               {sortedItems?.map((item) => (
-                <CartLineItemWithPromo
+                <CartLineItem
                   key={item.id}
                   item={item}
                   cart={cart}
@@ -848,18 +810,18 @@ export const CartDropdown = () => {
 
             <DrawerFooter style={{ borderTopColor: "var(--color-void-mid)" }}>
               <div className="flex items-center justify-between mb-4">
-                <span 
+                <span
                   className="text-base font-bold"
-                  style={{ 
+                  style={{
                     color: "var(--color-void-muted)",
                     fontFamily: "var(--font-sans)"
                   }}
                 >
                   Subtotal
                 </span>
-                <span 
+                <span
                   className="text-lg font-bold"
-                  style={{ 
+                  style={{
                     color: "var(--color-void-white)",
                     fontFamily: "var(--font-sans)"
                   }}
@@ -869,7 +831,7 @@ export const CartDropdown = () => {
               </div>
 
               <Link to={`${baseHref}/cart` as any} onClick={closeCart}>
-                <Button 
+                <button
                   className="w-full py-3 text-base font-bold uppercase tracking-wider"
                   style={{
                     backgroundColor: "var(--color-void-white)",
@@ -878,7 +840,7 @@ export const CartDropdown = () => {
                   }}
                 >
                   Go to cart
-                </Button>
+                </button>
               </Link>
             </DrawerFooter>
           </>
@@ -888,5 +850,4 @@ export const CartDropdown = () => {
   )
 }
 
-// Default export for backwards compatibility
 export default CartLineItem

@@ -13,8 +13,56 @@ import {
   removeLineItemOptimistically,
   createOptimisticCart,
 } from "@/lib/utils/cart"
+import { getPromotions, getPromotionsForProduct } from "@/lib/data/promotions"
 
 const DEFAULT_CART_FIELDS = "+items.total, shipping_methods.name"
+
+/**
+ * Apply all relevant promo codes to a cart based on the items in it.
+ * Fetches active promotions, then applies any codes that match items already in the cart.
+ */
+async function autoApplyPromotions(cartId: string): Promise<void> {
+  try {
+    const promoData = await getPromotions()
+    if (!promoData?.raw_promotions?.length) return
+
+    // Get current cart items to check which promotions apply
+    const { cart } = await sdk.store.cart.retrieve(cartId, {
+      fields: "+items.product_id",
+    })
+    if (!cart?.items?.length) return
+
+    // Collect unique promo codes for products in the cart
+    const codesToApply = new Set<string>()
+    for (const item of cart.items) {
+      const productId = item.product_id
+      if (!productId) continue
+      const promos = getPromotionsForProduct(promoData.promotions, productId)
+      for (const promo of promos) {
+        codesToApply.add(promo.code)
+      }
+    }
+
+    if (codesToApply.size === 0) return
+
+    // Check which codes are already applied
+    const existingCodes = new Set(
+      (cart.promotions || []).map((p: any) => p.code?.toUpperCase())
+    )
+    const newCodes = Array.from(codesToApply).filter(
+      (code) => !existingCodes.has(code.toUpperCase())
+    )
+    if (newCodes.length === 0) return
+
+    await sdk.client.fetch(`/store/carts/${cartId}/promotions`, {
+      method: "POST",
+      body: { promo_codes: newCodes },
+    })
+  } catch (error) {
+    // Non-blocking: if promo application fails, the cart still works
+    console.error("Auto-apply promotions failed:", error)
+  }
+}
 
 export const useCart = ({ fields }: { fields?: string } = {}) => {
   return useQuery({
@@ -105,7 +153,15 @@ export const useAddToCart = ({ fields }: { fields?: string } = {}) => {
         { variant_id, quantity },
         { fields: requestFields || fields || DEFAULT_CART_FIELDS }
       )
-      return response.cart
+
+      // Auto-apply promotions for products in the cart
+      await autoApplyPromotions(cartId)
+
+      // Re-fetch the cart with updated promotion totals
+      const { cart: updatedCart } = await sdk.store.cart.retrieve(cartId, {
+        fields: requestFields || fields || DEFAULT_CART_FIELDS,
+      })
+      return updatedCart
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ predicate: queryKeys.cart.predicate })
